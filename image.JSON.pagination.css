@@ -1,0 +1,25 @@
+.json-button-class-pagination{
+	border:solid 1px;
+	padding : 4px;
+	font-family:tahoma;
+	font-size:14px;
+	margin-top:4px;
+	cursor:pointer;
+	
+}
+.json-class-pagination{
+	width:340px;
+	height:30px;
+	margin : 2px;
+}
+.json-total-class-pagination{	
+	margin:4px;
+}
+.json-goto-class-pagination{
+	margin-top:5px;
+	width:32px;
+}
+.json-box-class-pagination{
+	position:absolute;
+	border:solid 2px gray;
+}
