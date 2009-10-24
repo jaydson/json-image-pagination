@@ -322,13 +322,25 @@ jQuery.fn.extend({
 			 /**
 			 * Method to check if the callback is valid and apply it
 			 */	
-			 ApplyCallBack : function(callback,params){
-				// Check if has params
-				params = params != null && params != "undefined" && params != "" ? params : null;
-				
-				// Check if the callback is a function and if callback is not null. If params are not null apply with params
-				return callback != null && typeof(callback) == "function" ? params != null ? callback(params) : callback(): false;
-			 },
+			 ApplyCallBack : function(){
+
+				   // Array of Arguments
+				   var arrArgs = new Array();
+
+				   // Test if the function have more then one argument
+				   if(arguments.length > 1){
+						   // Loop in arguments to push the Array
+						   for(var i=1;i<arguments.length;i++){
+								   arrArgs.push(arguments[i]);
+						   }
+				   }else{
+						   // Just set the Array with the first argument
+						   arrArgs.push(arguments[0]);
+				   }
+
+				   // Check if the callback is a function and if callback is not null. If arrArgs are not null apply with arrArgs
+				   return arguments[0] != null && typeof(arguments[0]) == "function" ? arrArgs.length > 1 ? arguments[0].apply(this,arrArgs) : arguments[0](): false;
+			},
 			 
 			 /**
 			 * Init the plugin
