@@ -7,9 +7,10 @@
 			$(document).ready(function(){
 				$("#container").ImageJSONPagination({
 					imagePath             : "img",
-					json 		          : "sample.json",
+					json 		          : "json_sample.php",
 					paginationOrientation : "after",
 					fadeIn				  : true,
+					hashURL 			  : true,
 					className	          : "json-content-pagination"
 				});
 			});
@@ -18,12 +19,16 @@
 <body>
 	<div id="container">
 		<!--
+		Template 1
 		<div class="mydiv json-content-pagination"></div>
 		<div class="mydiv json-content-pagination"></div>
 		<div class="mydiv json-content-pagination"></div>
 		<div class="mydiv json-content-pagination"></div>
 		-->
 		
+		<!--
+		Template 2
+		-->
 		<table>
 			<tr>
 				<td class="json-content-pagination">

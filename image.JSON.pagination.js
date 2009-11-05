@@ -1,13 +1,10 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
 /**
  * @Image JSON Pagination
  * jQuery Plugin to dynamically image pagination using JSON
  * @author Jaydson Gomes
  * @version 1.0
  * @date 06/10/09
+ * @lastDateReview 05/11/09
  */
  
 jQuery.fn.extend({
@@ -49,17 +46,20 @@ jQuery.fn.extend({
 			onLoadJSON			  : null
 		}
 		
+		/**
+		* Core
+		*/
 		var core = {
 		
 			/**
 			 * Core Properties
 			 */
-			targetElementId : "",
+			targetElementId  : "",
 			elementsToAppend : null,
-			imagesJSON : null,
-			totalPages : 0,
-			currentPage : 1,
-			size 	   : null, 
+			imagesJSON       : null,
+			totalPages       : 0,
+			currentPage      : 1,
+			size 	         : null, 
 			 
 			 /**
 			 * Create the images of gallery
@@ -67,19 +67,20 @@ jQuery.fn.extend({
 			 CreateImages : function(){
 				// Get the total of elements
 				var totalImages = core.elementsToAppend.length;
-				
+
 				// Loop that create elements IMG
 				for(var i=0;i<totalImages;i++){
 					var elem = document.createElement("IMG");
-					elem.src = defaults.imagePath + "/" + core.imagesJSON.images[i].name;
+					elem.src = defaults.imagePath + "/" + core.imagesJSON.images[i].thumbName;
 					elem.alt = core.imagesJSON.images[i].alt;
+					elem.imageName = core.imagesJSON.images[i].thumbName;
 					elem.style.width = core.imagesJSON.images[i].width;
 					//elem.style.height = core.imagesJSON.images[i].height;
 					
 					// Append the image created to correct element
 					$(core.elementsToAppend[i]).append(elem);
-					$(elem).bind("click",function(){
-						core.OpenImage();
+					$(elem).bind("click",function(e){
+						core.OpenImage(this.imageName,e);
 					});
 				}
 				
@@ -89,27 +90,89 @@ jQuery.fn.extend({
 				// Create the pagination
 				core.CreatePagination();
 				
-				// Create the box
-				//core.CreateBoxImage();
-			 },
-			 
-			 OpenImage : function(){
+				// Create the ModalMask
+				core.CreateModalMask();
 				
+				// Create the box
+				core.CreateBoxImage();				
+
 			 },
 			 
+			 /**
+			 * Open image modal
+			 */
+			 OpenImage : function(src,e){
+				// Get the document Width and Height
+				var maskHeight = $(document).height();
+				var maskWidth = $(document).width();
+				
+				// Apply the Width and Height in a modalmask
+				$('#image_json_modalmask').css({'width':maskWidth,'height':maskHeight});
+				
+				// Apply the top and left position in the modal
+				$("#image_json_box").css('top',  maskHeight/2-$("#image_json_box").height()/2);
+				$("#image_json_box").css('left', maskWidth/2-$("#image_json_box").width()/2);
+				
+				// Set the source to image
+				$("#image_json_box_container").attr("src", defaults.imagePath + "/" + decodeURI(src));
+				
+				// Apply opacity with fadeTo in modalmask
+				$('#image_json_modalmask').fadeTo("fast",0.7);
+				
+				// Show modalmask with fadeIn()
+				$('#image_json_modalmask').fadeIn(500,function(){
+					// In callback show the modal image
+					$("#image_json_box").fadeIn(2000,function(){
+						// Bind mousedown event in modalmask
+						$("#image_json_modalmask").bind("mousedown",function(){
+							core.CloseImage();
+						});
+					});
+				});
+			 },
+			 
+			 /**
+			 * Close image modal
+			 */
+			 CloseImage : function(){
+				// First, fadeout the box image
+				$('#image_json_box').fadeOut(400,function(){
+					// Hide the modalmask
+					$('#image_json_modalmask').fadeOut(function(){
+						// Unbind mousedown event in modalmask
+						$("#image_json_modalmask").unbind("mousedown");
+					});
+				});
+			 },
+			
+			 /**
+			 * Create the element container to box image
+			 */
 			 CreateBoxImage : function(){
 				var box = document.createElement("DIV");
 				$(box).addClass(defaults.imageBoxClass);
-				$(box).attr("id","image.json.box");
-				$(box).html("XXXX");
+				$(box).attr("id","image_json_box");
+				var img = document.createElement("IMG");
+				$(img).attr("id","image_json_box_container");
+				$(box).html($(img));
 				$("body").append($(box));
 			 },
 			 
+			  /**
+			 * Create the element mask
+			 */
+			 CreateModalMask : function(){
+				var box = document.createElement("DIV");
+				$(box).addClass("json-modal-mask-pagination");
+				$(box).attr("id","image_json_modalmask");
+				$("body").append($(box));
+			 },
+			 			 
 			 /**
 			 *Go To Page
 			 */
 			 GoTo : function(){
-				var to = parseInt(document.getElementById("image.json.gotopage").value) >= 0  ? parseInt(document.getElementById("image.json.gotopage").value) : null;
+				var to = parseInt(document.getElementById("image_json_gotopage").value) >= 0  ? parseInt(document.getElementById("image_json_gotopage").value) : null;
 					if(to!=null && to <= core.totalPages && to>0){
 						core.currentPage = to;
 						core.size = core.elementsToAppend.length * to;
@@ -141,8 +204,11 @@ jQuery.fn.extend({
 					
 					// Test to verify if image exists
 					if(newImages[x]){
+						//Update the name referene
+						$(core.elementsToAppend[x]).children().attr("imageName",newImages[x].imageName);
+						
 						//Change the src
-						$(core.elementsToAppend[x]).children().attr("src",defaults.imagePath+"/"+newImages[x].name);
+						$(core.elementsToAppend[x]).children().attr("src",defaults.imagePath+"/"+newImages[x].thumbName);
 						
 						//If default setting FadeIn is set apply then
 						defaults.fadeIn ? $(core.elementsToAppend[x]).children().fadeIn("slow") : $(core.elementsToAppend[x]).children().css("display","block");
@@ -155,8 +221,8 @@ jQuery.fn.extend({
 				// Clean up the newImages Array
 				delete newImages;
 				
-				//Remove the element image.json.pagination
-				document.getElementById("image.json.pagination").parentNode.removeChild(document.getElementById("image.json.pagination"));
+				//Remove the element image_json_pagination
+				document.getElementById("image_json_pagination").parentNode.removeChild(document.getElementById("image_json_pagination"));
 				
 				//Create the pagination
 				core.CreatePagination();
@@ -170,7 +236,7 @@ jQuery.fn.extend({
 			 
 				// Create the element root of pagination
 				var pagination = document.createElement("DIV");
-				pagination.id = "image.json.pagination";
+				pagination.id = "image_json_pagination";
 				
 				// Add the class to pagination
 				$(pagination).addClass(defaults.paginationClass);
@@ -200,13 +266,13 @@ jQuery.fn.extend({
 					if(defaults.gotoEnable){
 						var gotoElement = document.createElement("DIV");
 						var inputGoToElement = document.createElement("INPUT");
-						$(inputGoToElement).attr("id", "image.json.gotopage");
+						$(inputGoToElement).attr("id", "image_json_gotopage");
 						$(inputGoToElement).attr("type", "text");
 						$(inputGoToElement).val(core.currentPage);
 						$(inputGoToElement).addClass(defaults.gotoClass);
 						var buttonGoTo =  document.createElement("INPUT");
 						$(buttonGoTo).attr("type","button");
-						$(buttonGoTo).attr("id", "image.json.gotopage.action");
+						$(buttonGoTo).attr("id", "image_json_gotopage.action");
 						$(buttonGoTo).val(defaults.gotoText);
 						$(buttonGoTo).bind("click",function(){
 							core.GoTo();
@@ -301,7 +367,9 @@ jQuery.fn.extend({
 			 * Add an hash to URL
 			 */	
 			 AddHashURL : function(){
-				document.location.hash = core.currentPage;
+				if(defaults.hashURL){
+					document.location.hash = core.currentPage;
+				}
 			 },
 			 
 			 /**
@@ -321,32 +389,14 @@ jQuery.fn.extend({
 			 
 			 /**
 			 * Method to check if the callback is valid and apply it
-			 */
-			ApplyCallBack : function(){
-
-				   // Total arguments
-				   var totalArgs = arguments.length;
-
-				   // Array of Arguments
-				   var arrArgs = new Array();
-
-				   // Test if the function have more than one argument
-				   if(arguments.length > 1){
-
-						   // Loop in arguments to push the Array
-						   var i=0;
-						   while (totalArgs > 0){
-								   totalArgs--,i++,
-								   // Store in Array of Arguments
-								   arrArgs.push(arguments[i]);
-						   }
-				   }else{
-						   // Just set the Array with the first argument
-						   arrArgs.push(arguments[0]);
-				   }
-				   // Check if the callback is a function and if callback is not null. If arrArgs are not null apply with arrArgs
-				   return arguments[0] != null && arguments[0] instanceof Function ? arrArgs.length > 1 ? arguments[0].apply(this,arrArgs) : arguments[0](): false;
-			},
+			 */	
+			 ApplyCallBack : function(callback,params){
+				// Check if has params
+				params = params != null && params != "undefined" && params != "" ? params : null;
+				
+				// Check if the callback is a function and if callback is not null. If params are not null apply with params
+				return callback != null && typeof(callback) == "function" ? params != null ? callback(params) : callback(): false;
+			 },
 			 
 			 /**
 			 * Init the plugin
@@ -380,5 +430,3 @@ jQuery.fn.extend({
 		});
 	}
 });
-
-

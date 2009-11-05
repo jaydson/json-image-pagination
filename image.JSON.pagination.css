@@ -22,4 +22,17 @@
 .json-box-class-pagination{
 	position:absolute;
 	border:solid 2px gray;
+	background:#ffffff;
+	display:none;
+	z-index:9999999;
+}
+.json-modal-mask-pagination{
+	width:100%;
+	height:100%;
+	position:absolute;
+	left:0;
+	top:0;
+	z-index:9999998;
+	background-color:#000;
+	display:none;
 }
