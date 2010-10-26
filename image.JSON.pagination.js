@@ -110,11 +110,13 @@ jQuery.fn.extend({
 				$('#image_json_modalmask').css({'width':maskWidth,'height':maskHeight});
 				
 				// Apply the top and left position in the modal
-				$("#image_json_box").css('top',  maskHeight/2-$("#image_json_box").height()/2);
-				$("#image_json_box").css('left', maskWidth/2-$("#image_json_box").width()/2);
+				var top = maskHeight/2-$("#image_json_box").height()/2;
+				var left = maskWidth/2-$("#image_json_box").width()/2;
+				$("#image_json_box").css({'top' : top, 'left' : left });
 				
 				// Set the source to image
-				$("#image_json_box_container").attr("src", defaults.imagePath + "/" + decodeURI(src));
+				var srcAttrContainer = defaults.imagePath + "/" + decodeURI(src);
+				$("#image_json_box_container").attr("src", srcAttrContainer);
 				
 				// Apply opacity with fadeTo in modalmask
 				$('#image_json_modalmask').fadeTo("fast",0.7);
@@ -122,7 +124,7 @@ jQuery.fn.extend({
 				// Show modalmask with fadeIn()
 				$('#image_json_modalmask').fadeIn(500,function(){
 					// In callback show the modal image
-					$("#image_json_box").fadeIn(2000,function(){
+					$("#image_json_box").fadeIn(100,function(){
 						// Bind mousedown event in modalmask
 						$("#image_json_modalmask").bind("mousedown",function(){
 							core.CloseImage();
@@ -149,12 +151,13 @@ jQuery.fn.extend({
 			 * Create the element container to box image
 			 */
 			 CreateBoxImage : function(){
-				var box = document.createElement("DIV");
-				$(box).addClass(defaults.imageBoxClass);
-				$(box).attr("id","image_json_box");
 				var img = document.createElement("IMG");
 				$(img).attr("id","image_json_box_container");
-				$(box).html($(img));
+
+				var box = document.createElement("DIV");
+				$(box).addClass(defaults.imageBoxClass)
+					  .attr("id","image_json_box")
+					  .html($(img));
 				$("body").append($(box));
 			 },
 			 
@@ -163,8 +166,8 @@ jQuery.fn.extend({
 			 */
 			 CreateModalMask : function(){
 				var box = document.createElement("DIV");
-				$(box).addClass("json-modal-mask-pagination");
-				$(box).attr("id","image_json_modalmask");
+				$(box).addClass("json-modal-mask-pagination")
+					  .attr("id","image_json_modalmask");
 				$("body").append($(box));
 			 },
 			 			 
@@ -172,7 +175,9 @@ jQuery.fn.extend({
 			 *Go To Page
 			 */
 			 GoTo : function(){
-				var to = parseInt(document.getElementById("image_json_gotopage").value) >= 0  ? parseInt(document.getElementById("image_json_gotopage").value) : null;
+				var elementGoToPage = document.getElementById("image_json_gotopage");
+				var to = parseInt(elementGoToPage.value) >= 0  ?
+						 parseInt(elementGoToPage.value) : null;
 					if(to!=null && to <= core.totalPages && to>0){
 						core.currentPage = to;
 						core.size = core.elementsToAppend.length * to;
@@ -194,12 +199,15 @@ jQuery.fn.extend({
 				var newImages = new Array();
 				
 				// Loop to get the appropriate images
-				for(var i=core.size-core.elementsToAppend.length;i<core.size;i++){
+				var elementsLength = core.elementsToAppend.length;
+				var coreTotal = core.size - elementsLength;
+				for(var i=coreTotal;i<core.size;i++){
 					newImages.push(core.imagesJSON.images[i]);
 				}
 				
 				// Loop that change de src attribute of images
-				for(var x=0;x<newImages.length;x++){
+				var newImagesLength = newImages.length;
+				for(var x=0;x<newImagesLength;x++){
 					$(core.elementsToAppend[x]).children().css("display","none");
 					
 					// Test to verify if image exists
@@ -208,10 +216,13 @@ jQuery.fn.extend({
 						$(core.elementsToAppend[x]).children().attr("imageName",newImages[x].imageName);
 						
 						//Change the src
-						$(core.elementsToAppend[x]).children().attr("src",defaults.imagePath+"/"+newImages[x].thumbName);
+						var src = defaults.imagePath+"/"+newImages[x].thumbName;
+						$(core.elementsToAppend[x]).children().attr("src",src);
 						
 						//If default setting FadeIn is set apply then
-						defaults.fadeIn ? $(core.elementsToAppend[x]).children().fadeIn("slow") : $(core.elementsToAppend[x]).children().css("display","block");
+						defaults.fadeIn ? 
+							$(core.elementsToAppend[x]).children().fadeIn("slow") : 
+							$(core.elementsToAppend[x]).children().css("display","block");
 					}else{
 						//Clean src and alt attributes
 						$(core.elementsToAppend[x]).children().attr({"src":"","alt":""});
@@ -222,7 +233,8 @@ jQuery.fn.extend({
 				delete newImages;
 				
 				//Remove the element image_json_pagination
-				document.getElementById("image_json_pagination").parentNode.removeChild(document.getElementById("image_json_pagination"));
+				var elementToRemove = document.getElementById("image_json_pagination");
+				elementToRemove.parentNode.removeChild(elementToRemove);
 				
 				//Create the pagination
 				core.CreatePagination();
@@ -247,7 +259,9 @@ jQuery.fn.extend({
 					var next = document.createElement("A");
 						$(next).addClass(defaults.buttonClass);
 					var oneOfText =  document.createElement("SPAN");
-						oneOfText.innerHTML = "&nbsp;" + core.currentPage + "&nbsp;" + defaults.oneOfText + "&nbsp;" + core.totalPages +"&nbsp;";
+						oneOfText.innerHTML = "&nbsp;" + core.currentPage + 
+											  "&nbsp;" + defaults.oneOfText + "&nbsp;" + 
+											  core.totalPages +"&nbsp;";
 					previous.innerHTML = defaults.textPreviousButton + "&nbsp;";
 					next.innerHTML = defaults.textNextButton;
 					pagination.appendChild(previous);
@@ -266,17 +280,17 @@ jQuery.fn.extend({
 					if(defaults.gotoEnable){
 						var gotoElement = document.createElement("DIV");
 						var inputGoToElement = document.createElement("INPUT");
-						$(inputGoToElement).attr("id", "image_json_gotopage");
-						$(inputGoToElement).attr("type", "text");
-						$(inputGoToElement).val(core.currentPage);
-						$(inputGoToElement).addClass(defaults.gotoClass);
+						$(inputGoToElement).attr("id", "image_json_gotopage")
+										   .attr("type", "text")
+										   .val(core.currentPage)
+										   .addClass(defaults.gotoClass);
 						var buttonGoTo =  document.createElement("INPUT");
-						$(buttonGoTo).attr("type","button");
-						$(buttonGoTo).attr("id", "image_json_gotopage.action");
-						$(buttonGoTo).val(defaults.gotoText);
-						$(buttonGoTo).bind("click",function(){
-							core.GoTo();
-						});
+						$(buttonGoTo).attr("type","button")
+									 .attr("id", "image_json_gotopage.action")
+									 .val(defaults.gotoText)
+									 .bind("click",function(){
+										core.GoTo();
+									 });
 						gotoElement.appendChild(inputGoToElement);
 						gotoElement.appendChild(buttonGoTo);
 						pagination.appendChild(gotoElement);
@@ -350,7 +364,9 @@ jQuery.fn.extend({
 					core.imagesJSON = jsonObject;
 					
 					// Calc the total pages (The number is rounded upwards to the nearest integer)
-					core.totalPages = Math.ceil(parseInt(core.imagesJSON.images.length) / (parseInt(core.elementsToAppend.length)));
+					var imagesLength = parseInt(core.imagesJSON.images.length);
+					var elementsLength = parseInt(core.elementsToAppend.length);
+					core.totalPages = Math.ceil(imagesLength / elementsLength);
 					
 					// Create Images
 					core.CreateImages();
@@ -392,10 +408,17 @@ jQuery.fn.extend({
 			 */	
 			 ApplyCallBack : function(callback,params){
 				// Check if has params
-				params = params != null && params != "undefined" && params != "" ? params : null;
+				params = params != null 
+								&& params 
+								!= "undefined" 
+								&& params 
+								!= "" ? 
+						params : null;
 				
 				// Check if the callback is a function and if callback is not null. If params are not null apply with params
-				return callback != null && typeof(callback) == "function" ? params != null ? callback(params) : callback(): false;
+				return callback != null 
+								&& typeof(callback) == "function" ?
+					   params != null ? callback(params) : callback() : false;
 			 },
 			 
 			 /**
