@@ -1,10 +1,10 @@
 /**
  * @Image JSON Pagination
- * jQuery Plugin to dynamically image pagination using JSON
+ * jQuery Plugin to paginate images
  * @author Jaydson Gomes
  * @version 1.0
- * @date 06/10/09
- * @lastDateReview 05/11/09
+ * @date 24/05/2011
+ * @lastDateReview 24/05/2011
  */
  
 jQuery.fn.extend({
@@ -13,28 +13,41 @@ jQuery.fn.extend({
 	 * ImageJSONPagination
 	 */
 	ImageJSONPagination: function(settings){
+	
 		/**
 		 * Default properties
 		 */
 		var defaults = {
+			
+			/**
+				Configuration
+			*/
 			imagePath      	      : "img",
 			json 		   	      : "sample.json",
+			totalImagesLabel      : true,
+			gotoEnable			  : true,
+			paginationOrientation : "after",
+			fadeIn				  : false,
+			hashURL				  : true,
+			
+			/**
+				Texts
+			*/
 			textPreviousButton    : "Previous",
 			textNextButton        : "Next",
 			oneOfText		      : "of",
-			totalImagesLabel      : true,
-			gotoEnable			  : true,
-			gotoClass			  : "json-goto-class-pagination",
 			gotoText			  : "Go To Page",
-			imageBoxClass		  : "json-box-class-pagination",
 			totalElementText      : "Total of Images ",
+			
+			/**
+				CSS
+			*/
+			gotoClass			  : "json-goto-class-pagination",
+			imageBoxClass		  : "json-box-class-pagination",
 			totalElementClass     : "json-total-class-pagination",
 			paginationClass	      : "json-class-pagination",
-			paginationOrientation : "after",
 			buttonClass		      : "json-button-class-pagination",
 			className 		      : "json-content-pagination",
-			fadeIn				  : false,
-			hashURL				  : true,
 			
 			/**
 				Events
@@ -151,10 +164,10 @@ jQuery.fn.extend({
 			 * Create the element container to box image
 			 */
 			 CreateBoxImage : function(){
-				var img = document.createElement("IMG");
+				var img = $("<img/>");
 				$(img).attr("id","image_json_box_container");
 
-				var box = document.createElement("DIV");
+				var box = $("<div/>");
 				$(box).addClass(defaults.imageBoxClass)
 					  .attr("id","image_json_box")
 					  .html($(img));
@@ -165,7 +178,7 @@ jQuery.fn.extend({
 			 * Create the element mask
 			 */
 			 CreateModalMask : function(){
-				var box = document.createElement("DIV");
+				var box = $("<div/>");
 				$(box).addClass("json-modal-mask-pagination")
 					  .attr("id","image_json_modalmask");
 				$("body").append($(box));
@@ -175,9 +188,9 @@ jQuery.fn.extend({
 			 *Go To Page
 			 */
 			 GoTo : function(){
-				var elementGoToPage = document.getElementById("image_json_gotopage");
-				var to = parseInt(elementGoToPage.value) >= 0  ?
-						 parseInt(elementGoToPage.value) : null;
+				var elementGoToPage = $("#image_json_gotopage");
+				var to = parseInt(elementGoToPage.val()) >= 0  ?
+						 parseInt(elementGoToPage.val()) : null;
 					if(to!=null && to <= core.totalPages && to>0){
 						core.currentPage = to;
 						core.size = core.elementsToAppend.length * to;
@@ -196,7 +209,7 @@ jQuery.fn.extend({
 			 Pager : function(){
 				
 				// Array with the images to append
-				var newImages = new Array();
+				var newImages = [];
 				
 				// Loop to get the appropriate images
 				var elementsLength = core.elementsToAppend.length;
@@ -247,53 +260,55 @@ jQuery.fn.extend({
 			 CreatePagination : function(){
 			 
 				// Create the element root of pagination
-				var pagination = document.createElement("DIV");
-				pagination.id = "image_json_pagination";
+				var pagination = $("<div/>");
+				pagination.attr('id','image_json_pagination');
 				
 				// Add the class to pagination
 				$(pagination).addClass(defaults.paginationClass);
+				var controls = $("<div class='controls-pagination'/>");
+				pagination.append(controls);
 					
 					// Create the elements to navigate
-					var previous = document.createElement("A");
+					var previous = $("<button/>"),
+						next = $("<button/>"),
+						oneOfText =  $("<span/>");
 						$(previous).addClass(defaults.buttonClass);
-					var next = document.createElement("A");
 						$(next).addClass(defaults.buttonClass);
-					var oneOfText =  document.createElement("SPAN");
-						oneOfText.innerHTML = "&nbsp;" + core.currentPage + 
-											  "&nbsp;" + defaults.oneOfText + "&nbsp;" + 
-											  core.totalPages +"&nbsp;";
-					previous.innerHTML = defaults.textPreviousButton + "&nbsp;";
-					next.innerHTML = defaults.textNextButton;
-					pagination.appendChild(previous);
-					pagination.appendChild(oneOfText);
-					pagination.appendChild(next);
+						oneOfText.html("&nbsp;" + core.currentPage + "&nbsp;" 
+										+ defaults.oneOfText + "&nbsp;" 
+										+ core.totalPages +"&nbsp;");
+					previous.html(defaults.textPreviousButton + "&nbsp;");
+					next.html(defaults.textNextButton);
+					controls.append(previous);
+					controls.append(oneOfText);
+					controls.append(next);
 					
 					//Label total images
 					if(defaults.totalImagesLabel){
-						var totalText = document.createElement("SPAN");
-						totalText.innerHTML = defaults.totalElementText + " " + core.imagesJSON.images.length;
+						var totalText = $("<div/>");
+						totalText.html(defaults.totalElementText + " " + core.imagesJSON.images.length);
 						$(totalText).addClass(defaults.totalElementClass);
-						pagination.appendChild(totalText);
+						controls.append(totalText);
 					}
 					
 					// Go To Element
 					if(defaults.gotoEnable){
-						var gotoElement = document.createElement("DIV");
-						var inputGoToElement = document.createElement("INPUT");
+						var gotoElement = $("<div style='float:left'/>"),
+							inputGoToElement = $("<input/>");
 						$(inputGoToElement).attr("id", "image_json_gotopage")
 										   .attr("type", "text")
 										   .val(core.currentPage)
 										   .addClass(defaults.gotoClass);
-						var buttonGoTo =  document.createElement("INPUT");
+						var buttonGoTo =  $("<input/>");
 						$(buttonGoTo).attr("type","button")
 									 .attr("id", "image_json_gotopage.action")
 									 .val(defaults.gotoText)
 									 .bind("click",function(){
 										core.GoTo();
 									 });
-						gotoElement.appendChild(inputGoToElement);
-						gotoElement.appendChild(buttonGoTo);
-						pagination.appendChild(gotoElement);
+						gotoElement.append(inputGoToElement);
+						gotoElement.append(buttonGoTo);
+						controls.append(gotoElement);
 					}
 					
 				// Switch Orientation(after,before)
